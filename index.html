@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NH Bishop Election</title>
+<meta name="description" content="Live ballot results for the election of the 11th Bishop of New Hampshire, October 24, 2026.">
+<link rel="icon" href="https://images.squarespace-cdn.com/content/v1/542c2c7ee4b0558816eec667/0a256645-ceca-43a1-b62a-0071ececc7ab/ECNH+Stacked_Primary_Logo_RGB.png?format=100w">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f4f3ef;
+  --surface: #fcfcfb;
+  --surface-2: #f0efeb;
+  --border: #e2e0da;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #75736e;
+  --band: #1d2b4a;
+  --band-text: #ffffff;
+  --band-text-2: #c9d1e3;
+  --accent: #b5242c;
+  --good: #0a7d32;
+  --good-bg: #e3f4e8;
+  --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a;
+  --grid: #e7e5df;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33322f;
+    --text: #f0efec; --text-2: #c3c2b7; --text-3: #9a998f;
+    --band: #141d33; --band-text: #ffffff; --band-text-2: #aab4cc;
+    --accent: #e0545b; --good: #4cc276; --good-bg: #173322;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --grid: #2c2c2a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33322f;
+  --text: #f0efec; --text-2: #c3c2b7; --text-3: #9a998f;
+  --band: #141d33; --band-text: #ffffff; --band-text-2: #aab4cc;
+  --accent: #e0545b; --good: #4cc276; --good-bg: #173322;
+  --c1: #3987e5; --c2: #d95926; --c3: #199e70; --grid: #2c2c2a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.45 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+header.band { background: var(--band); color: var(--band-text); border-bottom: 4px solid var(--accent); }
+.band .wrap { display: flex; gap: 20px; align-items: center; padding-top: 22px; padding-bottom: 22px; }
+.shield { flex: none; overflow: hidden; font-size: 10px; color: #1d2b4a; width: 88px; height: 88px; background: #fff; border-radius: 12px; display: grid; place-items: center; padding: 8px; }
+.shield img { max-width: 100%; max-height: 100%; display: block; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--band-text-2); font-weight: 600; }
+h1 { font-family: "Source Serif 4", Georgia, serif; font-weight: 700; font-size: clamp(24px, 4.2vw, 36px); line-height: 1.12; margin: 4px 0 8px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 13px; color: var(--band-text-2); }
+.meta a { color: var(--band-text); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 12px; background: rgba(255,255,255,.12); color: #fff; }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #9fb0d3; }
+.pill.live .dot { background: #ff5a5f; animation: pulse 1.6s infinite; }
+.pill.final .dot { background: #4cc276; }
+@keyframes pulse { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .pill.live .dot { animation: none; } }
+
+main { padding: 20px 0 40px; }
+.notice { font-size: 13px; color: var(--text-3); margin: 0 0 16px; }
+.elected-banner { background: var(--good-bg); border: 1px solid var(--good); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+.elected-banner b { font-family: "Source Serif 4", Georgia, serif; font-size: 22px; display: block; }
+.empty { background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; padding: 32px 20px; text-align: center; color: var(--text-2); }
+.error { color: var(--accent); font-size: 13px; margin: 0 0 12px; }
+
+.round { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+.round.new { animation: flash 2.4s ease-out; }
+@keyframes flash { from { box-shadow: 0 0 0 4px var(--accent); } to { box-shadow: 0 0 0 0 transparent; } }
+.round-head time { font-size: 12px; color: var(--text-3); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.round-head h2 { font-family: "Source Serif 4", Georgia, serif; font-size: 26px; margin: 2px 0 2px; }
+.round-head p { margin: 0 0 16px; color: var(--text-2); font-size: 15px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; color: var(--text-3); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; margin-left: 8px; vertical-align: middle; font-family: Inter, sans-serif; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--surface); position: relative; }
+.card.won { border-color: var(--good); box-shadow: inset 0 0 0 1px var(--good); }
+.card-name { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 10px; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.card-name small { display: block; font-weight: 400; color: var(--text-3); font-size: 12px; }
+.order { padding: 8px 0; border-top: 1px solid var(--grid); }
+.order-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.order-label { font-size: 12px; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+.order-num { font-variant-numeric: tabular-nums; }
+.order-num b { font-size: 22px; }
+.order-num span { color: var(--text-2); font-size: 13px; margin-left: 4px; }
+.meter { position: relative; height: 6px; background: var(--surface-2); border-radius: 3px; margin: 6px 0 6px; }
+.meter i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.meter u { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); left: 50%; }
+.maj { font-size: 12px; color: var(--text-3); }
+.maj.yes { color: var(--good); font-weight: 700; }
+.badge { position: absolute; top: 12px; right: 12px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.badge.win { background: var(--good); color: #fff; }
+.badge.wd { background: var(--surface-2); color: var(--text-2); }
+
+.thresholds { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--text-2); margin: -4px 0 14px; }
+.charts { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; }
+.chart { border: 1px solid var(--border); border-radius: 12px; padding: 12px; min-width: 0; }
+.chart h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--text-2); }
+.chart .box { position: relative; height: 220px; }
+@media (max-width: 860px) { .charts { grid-template-columns: 1fr 1fr; } .chart.bar { grid-column: 1 / -1; } }
+@media (max-width: 520px) {
+  .band .wrap { gap: 14px; } .shield { width: 64px; height: 64px; }
+  .charts { grid-template-columns: 1fr; } .round { padding: 16px; }
+}
+footer { font-size: 12px; color: var(--text-3); padding: 0 0 32px; }
+footer a { color: var(--text-2); }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <div class="shield"><img src="https://images.squarespace-cdn.com/content/v1/542c2c7ee4b0558816eec667/0a256645-ceca-43a1-b62a-0071ececc7ab/ECNH+Stacked_Primary_Logo_RGB.png?format=300w" alt="ECNH"></div>
+    <div>
+      <div class="eyebrow">224th Annual Diocesan Convention · St. Paul's Church, Concord · October 24, 2026</div>
+      <h1>Election of the 11th Bishop of New Hampshire</h1>
+      <div class="meta">
+        <span id="status" class="pill"><span class="dot"></span><span>Loading…</span></span>
+        <span id="checked"></span>
+        <a href="https://www.youtube.com/@NHEpiscopal" target="_blank" rel="noopener">Livestream</a>
+        <a href="https://www.nhepiscopal.org/diocesan-convention-2026" target="_blank" rel="noopener">Diocesan page</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice">Unofficial results tracker. Election requires a majority of votes cast in both the clergy and lay orders on the same ballot. Page refreshes every minute.</p>
+  <div id="error" class="error" hidden></div>
+  <div id="banner"></div>
+  <div id="rounds"></div>
+</main>
+<footer class="wrap">Not affiliated with the Episcopal Church of New Hampshire. Source: <a href="https://www.nhepiscopal.org/diocesan-convention-2026" target="_blank" rel="noopener">nhepiscopal.org</a>. Times are Eastern.</footer>
+
+<script>
+const DEMO = new URLSearchParams(location.search).has("demo");
+const DATA_URL = DEMO ? "data/sample.json" : "data/results.json";
+const POLL_MS = 60000;
+const ORDERS = [["clergy", "Clergy"], ["laity", "Laity"]];
+let lastHash = null, knownRounds = new Set(), charts = [], nextAt = 0, data = null;
+
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const colorOf = i => css(`--c${(i % 3) + 1}`);
+const fmtTime = iso => iso ? new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }) : "";
+const pct = (v, t) => t ? (100 * v / t) : 0;
+const fmtPct = (v, t) => pct(v, t).toFixed(1) + "%";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+function cands() { return data.candidates; }
+function cand(id) { return cands().find(c => c.id === id) || { id, short: id, name: id }; }
+function idx(id) { return Math.max(0, cands().findIndex(c => c.id === id)); }
+function onBallot(r) { return cands().filter(c => ORDERS.some(([o]) => r[o] && c.id in r[o].votes)); }
+function total(o) { return o.totalCast || Object.values(o.votes).reduce((a, b) => a + b, 0); }
+function needed(o) { return o.needed || Math.floor(total(o) / 2) + 1; }
+function hasMaj(o, id) { return o && (o.votes[id] || 0) > total(o) / 2; }
+function names(ids) { const n = ids.map(i => cand(i).short); return n.length < 2 ? n.join("") : n.slice(0, -1).join(", ") + " and " + n.at(-1); }
+
+function summary(r) {
+  const wd = (r.withdrawnAfter || []);
+  const wdBefore = (r.withdrawnBefore || []);
+  const tail = (wdBefore.length ? ` ${names(wdBefore)} withdrew before this ballot.` : "")
+             + (wd.length ? ` ${names(wd)} withdrew after this ballot.` : "");
+  if (r.elected) {
+    const c = r.clergy, l = r.laity, id = r.elected;
+    return `${cand(id).short} elected with majorities in both orders: clergy ${c.votes[id]} of ${total(c)}, laity ${l.votes[id]} of ${total(l)}.`;
+  }
+  const parts = [];
+  const leaders = {};
+  for (const [o, label] of ORDERS) {
+    if (!r[o]) { parts.push(`${label} results pending.`); continue; }
+    const sorted = Object.entries(r[o].votes).sort((a, b) => b[1] - a[1]);
+    leaders[o] = sorted[0][0];
+    const tie = sorted[1] && sorted[1][1] === sorted[0][1];
+    if (hasMaj(r[o], sorted[0][0])) parts.push(`${cand(sorted[0][0]).short} has a ${label.toLowerCase()} majority.`);
+    else if (tie) parts.push(`${label} tied.`);
+    else parts.push(`${cand(sorted[0][0]).short} leads ${label.toLowerCase()}.`);
+  }
+  return "No election. " + parts.join(" ") + tail;
+}
+
+function scorecard(r, c) {
+  const won = r.elected === c.id;
+  const wd = (r.withdrawnAfter || []).includes(c.id);
+  const rows = ORDERS.map(([o, label]) => {
+    const ord = r[o];
+    if (!ord || !(c.id in ord.votes)) return `<div class="order"><div class="order-top"><span class="order-label">${label}</span><span class="maj">pending</span></div></div>`;
+    const v = ord.votes[c.id], t = total(ord), n = needed(ord), maj = hasMaj(ord, c.id);
+    return `<div class="order">
+      <div class="order-top"><span class="order-label">${label}</span>
+        <span class="order-num"><b>${v}</b><span>${fmtPct(v, t)}</span></span></div>
+      <div class="meter" aria-hidden="true"><i style="width:${Math.min(100, pct(v, t))}%;background:${colorOf(idx(c.id))}"></i><u style="left:${Math.min(100, pct(n, t))}%"></u></div>
+      <div class="maj ${maj ? "yes" : ""}">${maj ? "✓ Majority reached" : `${Math.max(0, n - v)} short of majority (${n} needed)`}</div>
+    </div>`;
+  }).join("");
+  return `<div class="card ${won ? "won" : ""}">
+    ${won ? `<span class="badge win">✓ Elected</span>` : wd ? `<span class="badge wd">Withdrew</span>` : ""}
+    <div class="card-name"><span class="swatch" style="background:${colorOf(idx(c.id))}"></span><span>${esc(c.short)}<small>${esc(c.name)}</small></span></div>
+    ${rows}</div>`;
+}
+
+function roundHTML(r) {
+  const thr = ORDERS.filter(([o]) => r[o]).map(([o, label]) =>
+    `<span><b>${label}:</b> ${total(r[o])} cast · ${needed(r[o])} needed</span>`).join("");
+  return `<section class="round ${knownRounds.size && !knownRounds.has(r.round) ? "new" : ""}" id="ballot-${r.round}">
+    <div class="round-head">
+      <time datetime="${r.detectedAt}">${fmtTime(r.detectedAt)} ET</time>
+      <h2>Ballot ${r.round}${r.source === "manual" ? `<span class="tag">entered manually</span>` : ""}</h2>
+      <p>${esc(summary(r))}</p>
+    </div>
+    <div class="cards">${onBallot(r).map(c => scorecard(r, c)).join("")}</div>
+    <div class="thresholds">${thr}</div>
+    <div class="charts">
+      <div class="chart bar"><h3>Raw votes by order</h3><div class="box"><canvas id="bar-${r.round}" aria-label="Votes by order, ballot ${r.round}"></canvas></div></div>
+      ${ORDERS.map(([o, label]) => `<div class="chart"><h3>${label} share</h3><div class="box"><canvas id="pie-${o}-${r.round}" aria-label="${label} vote share, ballot ${r.round}"></canvas></div></div>`).join("")}
+    </div>
+  </section>`;
+}
+
+// Draws the majority threshold for each order band and value labels at bar ends.
+const thresholdPlugin = {
+  id: "thresholds",
+  afterDatasetsDraw(chart, _, opts) {
+    const { ctx, scales: { x, y } } = chart;
+    ctx.save();
+    ctx.font = "600 11px Inter, sans-serif";
+    (opts.needed || []).forEach((n, i) => {
+      if (n == null) return;
+      const yc = y.getPixelForValue(i), half = y.height / chart.data.labels.length / 2 * 0.9, px = x.getPixelForValue(n);
+      ctx.strokeStyle = css("--text"); ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(px, yc - half); ctx.lineTo(px, yc + half); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = css("--text"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText(`Majority ${n}`, px, yc - half - 1);
+    });
+    chart.data.datasets.forEach((ds, di) => {
+      if (!chart.isDatasetVisible(di)) return;
+      chart.getDatasetMeta(di).data.forEach((bar, i) => {
+        const v = ds.data[i]; if (v == null) return;
+        const w = ctx.measureText(v).width;
+        ctx.fillStyle = css("--surface"); ctx.fillRect(bar.x + 3, bar.y - 7, w + 4, 14);
+        ctx.fillStyle = css("--text-2"); ctx.textBaseline = "middle"; ctx.textAlign = "left";
+        ctx.fillText(v, bar.x + 5, bar.y);
+      });
+    });
+    ctx.restore();
+  }
+};
+const sliceLabels = {
+  id: "sliceLabels",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart, ds = chart.data.datasets[0], t = ds.data.reduce((a, b) => a + b, 0);
+    ctx.save(); ctx.font = "700 12px Inter, sans-serif"; ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    chart.getDatasetMeta(0).data.forEach((arc, i) => {
+      if (!t || ds.data[i] / t < 0.08) return;
+      const p = arc.tooltipPosition(); ctx.fillText(fmtPct(ds.data[i], t), p.x, p.y);
+    });
+    ctx.restore();
+  }
+};
+
+function drawCharts(r) {
+  const cs = onBallot(r);
+  const tick = { color: css("--text-2"), font: { family: "Inter", size: 12 } };
+  const maxV = Math.max(...ORDERS.map(([o]) => r[o] ? Math.max(needed(r[o]), ...Object.values(r[o].votes)) : 0));
+  charts.push(new Chart(document.getElementById(`bar-${r.round}`), {
+    type: "bar",
+    data: {
+      labels: ORDERS.map(([, l]) => l),
+      datasets: cs.map(c => ({
+        label: c.short, data: ORDERS.map(([o]) => r[o] ? (r[o].votes[c.id] ?? null) : null),
+        backgroundColor: colorOf(idx(c.id)), borderRadius: { topRight: 4, bottomRight: 4 }, borderSkipped: "start",
+        borderColor: css("--surface"), borderWidth: { top: 1, bottom: 1 }, barPercentage: 0.9, categoryPercentage: 0.78
+      }))
+    },
+    options: {
+      indexAxis: "y", maintainAspectRatio: false, animation: false,
+      layout: { padding: { right: 28, top: 14 } },
+      scales: {
+        x: { beginAtZero: true, suggestedMax: maxV * 1.08, grid: { color: css("--grid") }, border: { display: false }, ticks: tick },
+        y: { grid: { display: false }, border: { color: css("--border") }, ticks: { ...tick, font: { family: "Inter", size: 12, weight: "600" } } }
+      },
+      plugins: {
+        legend: { position: "bottom", labels: { color: css("--text-2"), boxWidth: 12, boxHeight: 12, font: { family: "Inter" } } },
+        tooltip: { callbacks: { label: ctx => {
+          const o = ORDERS[ctx.dataIndex][0]; return `${ctx.dataset.label}: ${ctx.raw} (${fmtPct(ctx.raw, total(r[o]))})`; } } },
+        thresholds: { needed: ORDERS.map(([o]) => r[o] ? needed(r[o]) : null) }
+      }
+    },
+    plugins: [thresholdPlugin]
+  }));
+  for (const [o] of ORDERS) {
+    const el = document.getElementById(`pie-${o}-${r.round}`);
+    if (!r[o]) { el.parentElement.innerHTML = `<div class="empty" style="padding:20px">Pending</div>`; continue; }
+    const ids = cs.filter(c => c.id in r[o].votes);
+    const vals = ids.map(c => r[o].votes[c.id]);
+    const other = total(r[o]) - vals.reduce((a, b) => a + b, 0);
+    const labels = ids.map(c => c.short), colors = ids.map(c => colorOf(idx(c.id)));
+    if (other > 0) { labels.push("Other / blank"); vals.push(other); colors.push(css("--text-3")); }
+    charts.push(new Chart(el, {
+      type: "pie",
+      data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderColor: css("--surface"), borderWidth: 2 }] },
+      options: {
+        maintainAspectRatio: false, animation: false,
+        plugins: {
+          legend: { position: "bottom", labels: { color: css("--text-2"), boxWidth: 12, boxHeight: 12, font: { family: "Inter" } } },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw} (${fmtPct(ctx.raw, total(r[o]))})` } }
+        }
+      },
+      plugins: [sliceLabels]
+    }));
+  }
+}
+
+function render() {
+  charts.forEach(c => c.destroy()); charts = [];
+  const st = document.getElementById("status");
+  const label = { waiting: "Awaiting first ballot", in_progress: "Balloting in progress", final: "Final" }[data.status] || data.status;
+  st.className = "pill " + (data.status === "final" ? "final" : data.status === "in_progress" ? "live" : "");
+  st.lastElementChild.textContent = (DEMO ? "DEMO · " : "") + label;
+
+  const banner = document.getElementById("banner");
+  if (data.elected) {
+    const r = data.rounds.find(x => x.elected === data.elected);
+    banner.innerHTML = `<div class="elected-banner"><b>${esc(cand(data.elected).name)} elected 11th Bishop of New Hampshire</b>On ballot ${r.round}, ${fmtTime(r.detectedAt)} ET. Subject to consents of the wider Church.</div>`;
+  } else banner.innerHTML = "";
+
+  const err = document.getElementById("error");
+  err.hidden = !data.lastError; err.textContent = data.lastError ? `Last check of the diocesan page failed: ${data.lastError}` : "";
+
+  const rounds = [...(data.rounds || [])].sort((a, b) => b.round - a.round);
+  document.getElementById("rounds").innerHTML = rounds.length ? rounds.map(roundHTML).join("")
+    : `<div class="empty">No ballots posted yet. Balloting begins after the opening liturgy; Convention is called to order at 10:00 a.m. ET.</div>`;
+  rounds.forEach(drawCharts);
+  knownRounds = new Set(rounds.map(r => r.round));
+}
+
+function tickClock() {
+  const el = document.getElementById("checked");
+  if (!data) return;
+  const s = Math.max(0, Math.round((nextAt - Date.now()) / 1000));
+  el.textContent = (data.lastChecked ? `Source checked ${fmtTime(data.lastChecked)} ET · ` : "") +
+    (data.status === "final" ? "polling stopped" : `refresh in ${s}s`);
+}
+
+async function load() {
+  try {
+    const res = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const text = await res.text();
+    data = JSON.parse(text);
+    if (text !== lastHash) { lastHash = text; render(); }
+  } catch (e) { console.warn("load failed", e); }
+  nextAt = Date.now() + POLL_MS;
+  tickClock();
+  if (!data || data.status !== "final" || DEMO) setTimeout(load, POLL_MS);
+}
+setInterval(tickClock, 1000);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => data && render());
+load();
+</script>
+</body>
+</html>

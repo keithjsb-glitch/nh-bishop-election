@@ -1,0 +1,37 @@
+name: Poll election results
+
+on:
+  schedule:
+    - cron: "0 13 24 10 *"   # 09:00 EDT Sat Oct 24 (GitHub may start scheduled runs 5-30 min late)
+    - cron: "40 18 24 10 *"  # 14:40 EDT continuation run if balloting is still going
+  workflow_dispatch:
+    inputs:
+      max_minutes:
+        description: "Minutes to keep polling (max 345)"
+        default: "345"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: poller
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests beautifulsoup4
+      - name: Poll every 60 s until a nominee is elected
+        env:
+          MAX_MIN: ${{ github.event.inputs.max_minutes || '345' }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = schedule ] && [ "$(date -u +%Y)" != 2026 ]; then exit 0; fi
+          git config user.name "election-poller"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python scraper/poll.py --loop --commit --interval 60 --max-minutes "$MAX_MIN"

@@ -1,0 +1,65 @@
+name: Enter ballot manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      round:
+        description: "Ballot number"
+        required: true
+      clergy:
+        description: "Clergy votes: Cardoza, Gardner-Smith, Lindh-Payne (blank = not on ballot), e.g. 20,28,14"
+        default: ""
+      laity:
+        description: "Lay votes, same order, e.g. 64,50,27"
+        default: ""
+      clergy_cast:
+        description: "Clergy votes cast, if different from the sum (optional)"
+        default: ""
+      laity_cast:
+        description: "Lay votes cast, if different from the sum (optional)"
+        default: ""
+      withdrawn_after:
+        description: "Nominee(s) who withdrew after this ballot, e.g. lindh"
+        default: ""
+      final:
+        description: "Mark election final and stop polling"
+        type: boolean
+        default: false
+      delete:
+        description: "Delete this ballot instead"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  enter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests beautifulsoup4
+      - name: Save ballot
+        env:
+          ROUND: ${{ inputs.round }}
+          CLERGY: ${{ inputs.clergy }}
+          LAITY: ${{ inputs.laity }}
+          CCAST: ${{ inputs.clergy_cast }}
+          LCAST: ${{ inputs.laity_cast }}
+          WD: ${{ inputs.withdrawn_after }}
+          FINAL: ${{ inputs.final }}
+          DEL: ${{ inputs.delete }}
+        run: |
+          args=(--round "$ROUND" --clergy "$CLERGY" --laity "$LAITY" --clergy-cast "$CCAST" --laity-cast "$LCAST" --withdrawn-after "$WD")
+          [ "$FINAL" = true ] && args+=(--final)
+          [ "$DEL" = true ] && args+=(--delete)
+          python scraper/manual.py "${args[@]}"
+          git config user.name "election-manual-entry"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/results.json
+          git commit -m "manual: ballot $ROUND" || exit 0
+          for i in 1 2 3; do git push && exit 0; git pull --rebase -X theirs; done
+          exit 1

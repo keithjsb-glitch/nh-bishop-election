@@ -1,0 +1,13 @@
+{
+  "election": "Election of the 11th Bishop of New Hampshire",
+  "source": "https://www.nhepiscopal.org/diocesan-convention-2026",
+  "status": "waiting",
+  "elected": null,
+  "candidates": [
+    {"id": "cardoza", "name": "The Rev. Ed Cardoza", "short": "Cardoza"},
+    {"id": "gardner-smith", "name": "The Rev. Fran Gardner-Smith", "short": "Gardner-Smith"},
+    {"id": "lindh-payne", "name": "The Rev. Kristofer Lindh-Payne", "short": "Lindh-Payne"}
+  ],
+  "rounds": [],
+  "lastChecked": null
+}

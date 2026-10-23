@@ -1,0 +1,113 @@
+{
+  "election": "Election of the 11th Bishop of New Hampshire",
+  "source": "https://www.nhepiscopal.org/diocesan-convention-2026",
+  "status": "final",
+  "elected": "cardoza",
+  "candidates": [
+    {
+      "id": "cardoza",
+      "name": "The Rev. Ed Cardoza",
+      "short": "Cardoza"
+    },
+    {
+      "id": "gardner-smith",
+      "name": "The Rev. Fran Gardner-Smith",
+      "short": "Gardner-Smith"
+    },
+    {
+      "id": "lindh-payne",
+      "name": "The Rev. Kristofer Lindh-Payne",
+      "short": "Lindh-Payne"
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "source": "manual",
+      "detectedAt": "2026-10-24T15:12:00+00:00",
+      "clergy": {
+        "votes": {
+          "cardoza": 20,
+          "gardner-smith": 28,
+          "lindh-payne": 14
+        },
+        "totalCast": 62,
+        "needed": 32,
+        "majority": []
+      },
+      "laity": {
+        "votes": {
+          "cardoza": 64,
+          "gardner-smith": 50,
+          "lindh-payne": 27
+        },
+        "totalCast": 141,
+        "needed": 71,
+        "majority": []
+      },
+      "elected": null
+    },
+    {
+      "round": 2,
+      "source": "manual",
+      "detectedAt": "2026-10-24T15:58:00+00:00",
+      "clergy": {
+        "votes": {
+          "cardoza": 24,
+          "gardner-smith": 31,
+          "lindh-payne": 7
+        },
+        "totalCast": 62,
+        "needed": 32,
+        "majority": []
+      },
+      "laity": {
+        "votes": {
+          "cardoza": 70,
+          "gardner-smith": 55,
+          "lindh-payne": 16
+        },
+        "totalCast": 141,
+        "needed": 71,
+        "majority": []
+      },
+      "withdrawnAfter": [
+        "lindh-payne"
+      ],
+      "elected": null,
+      "withdrawnBefore": []
+    },
+    {
+      "round": 3,
+      "source": "manual",
+      "detectedAt": "2026-10-24T16:41:00+00:00",
+      "clergy": {
+        "votes": {
+          "cardoza": 34,
+          "gardner-smith": 28
+        },
+        "totalCast": 62,
+        "needed": 32,
+        "majority": [
+          "cardoza"
+        ]
+      },
+      "laity": {
+        "votes": {
+          "cardoza": 76,
+          "gardner-smith": 65
+        },
+        "totalCast": 141,
+        "needed": 71,
+        "majority": [
+          "cardoza"
+        ]
+      },
+      "withdrawnBefore": [
+        "lindh-payne"
+      ],
+      "elected": "cardoza"
+    }
+  ],
+  "lastChecked": "2026-10-24T16:42:00+00:00"
+}

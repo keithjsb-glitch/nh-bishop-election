@@ -4,10 +4,26 @@
   "status": "waiting",
   "elected": null,
   "candidates": [
-    {"id": "cardoza", "name": "The Rev. Ed Cardoza", "short": "Cardoza"},
-    {"id": "gardner-smith", "name": "The Rev. Fran Gardner-Smith", "short": "Gardner-Smith"},
-    {"id": "lindh-payne", "name": "The Rev. Kristofer Lindh-Payne", "short": "Lindh-Payne"}
+    {
+      "id": "cardoza",
+      "name": "The Rev. Ed Cardoza",
+      "short": "Cardoza"
+    },
+    {
+      "id": "gardner-smith",
+      "name": "The Rev. Fran Gardner-Smith",
+      "short": "Gardner-Smith"
+    },
+    {
+      "id": "lindh-payne",
+      "name": "The Rev. Kristofer Lindh-Payne",
+      "short": "Lindh-Payne"
+    }
   ],
   "rounds": [],
-  "lastChecked": null
+  "lastChecked": "2026-10-24T13:19:59+00:00",
+  "sources": [
+    "https://www.nhepiscopal.org/diocesan-convention-2026",
+    "https://www.nhepiscopalbishoptransition.org/"
+  ]
 }

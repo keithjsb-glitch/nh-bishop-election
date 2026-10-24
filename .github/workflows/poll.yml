@@ -3,15 +3,16 @@ name: Poll election results
 on:
   schedule:
     - cron: "0 13 24 10 *"   # 09:00 EDT Sat Oct 24 (GitHub may start scheduled runs 5-30 min late)
-    - cron: "40 18 24 10 *"  # 14:40 EDT continuation run if balloting is still going
+    - cron: "10 19 24 10 *"  # 15:10 EDT backup start if the self-restart below fails
   workflow_dispatch:
     inputs:
       max_minutes:
-        description: "Minutes to keep polling (max 345)"
+        description: "Minutes to keep polling (max 345); never past STOP_AT"
         default: "345"
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: poller
@@ -30,8 +31,21 @@ jobs:
       - name: Poll every 60 s until a nominee is elected
         env:
           MAX_MIN: ${{ github.event.inputs.max_minutes || '345' }}
+          STOP_AT: "2026-10-24T21:00:00Z"   # 5:00 pm EDT
         run: |
           if [ "$GITHUB_EVENT_NAME" = schedule ] && [ "$(date -u +%Y)" != 2026 ]; then exit 0; fi
           git config user.name "election-poller"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python scraper/poll.py --loop --commit --interval 60 --max-minutes "$MAX_MIN"
+          python scraper/poll.py --loop --commit --interval 60 --max-minutes "$MAX_MIN" --until "$STOP_AT"
+      - name: Restart if not final and before 5 pm (jobs are capped at 6 h)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STOP_AT: "2026-10-24T21:00:00Z"
+        run: |
+          git fetch -q origin main
+          status=$(git show origin/main:data/results.json | python -c "import json,sys;print(json.load(sys.stdin).get('status'))")
+          if [ "$status" != final ] && [ "$(date -u +%s)" -lt "$(date -u -d "$STOP_AT" +%s)" ]; then
+            gh workflow run poll.yml --ref main -R "$GITHUB_REPOSITORY"
+            echo "restarted"
+          fi

@@ -369,6 +369,7 @@ def main():
     ap.add_argument("--interval", type=int, default=60)
     ap.add_argument("--max-minutes", type=int, default=345)
     ap.add_argument("--commit", action="store_true")
+    ap.add_argument("--until", help="ISO time to stop polling, e.g. 2026-10-24T21:00:00Z")
     ap.add_argument("--parse-file", help="parse a local text/html file and print JSON (testing)")
     a = ap.parse_args()
 
@@ -387,6 +388,12 @@ def main():
         return
 
     deadline = time.time() + a.max_minutes * 60
+    if a.until:
+        hard = dt.datetime.fromisoformat(a.until.replace("Z", "+00:00")).timestamp()
+        if time.time() >= hard:
+            print("past --until; exiting")
+            return
+        deadline = min(deadline, hard)
     last_commit = 0.0
     while time.time() < deadline:
         t0 = time.time()

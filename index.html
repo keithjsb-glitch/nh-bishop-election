@@ -134,7 +134,7 @@ footer a { color: var(--text-2); }
 </header>
 
 <main class="wrap">
-  <p class="notice">Unofficial results tracker. Election requires a majority of votes cast in both the clergy and lay orders on the same ballot. Page refreshes every minute.</p>
+  <p class="notice">Unofficial results tracker. Election requires a majority of votes cast in both the clergy and lay orders on the same ballot. The page checks for new results every minute.</p>
   <div id="error" class="error" hidden></div>
   <div id="banner"></div>
   <div id="rounds"></div>
@@ -342,26 +342,39 @@ function render() {
   knownRounds = new Set(rounds.map(r => r.round));
 }
 
+let lastFetchOk = 0, timer = null;
+const fmtClock = ms => new Date(ms).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", second: "2-digit" });
+
 function tickClock() {
   const el = document.getElementById("checked");
   if (!data) return;
+  if (data.status === "final") { el.textContent = `Final · poller stopped ${fmtTime(data.lastChecked)} ET`; return; }
   const s = Math.max(0, Math.round((nextAt - Date.now()) / 1000));
-  el.textContent = (data.lastChecked ? `Source checked ${fmtTime(data.lastChecked)} ET · ` : "") +
-    (data.status === "final" ? "polling stopped" : `refresh in ${s}s`);
+  const age = data.lastChecked ? (Date.now() - new Date(data.lastChecked)) / 60000 : 0;
+  const poller = data.lastChecked
+    ? (age > 20 ? `⚠ poller silent since ${fmtTime(data.lastChecked)} ET` : `Sites polled every 60 s · confirmed ${fmtTime(data.lastChecked)} ET`)
+    : "Poller not started";
+  el.textContent = `${poller} · page updated ${lastFetchOk ? fmtClock(lastFetchOk) : "—"} · next in ${s}s`;
 }
 
 async function load() {
+  clearTimeout(timer);
   try {
     const res = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error(res.status);
     const text = await res.text();
     data = JSON.parse(text);
+    lastFetchOk = Date.now();
     if (text !== lastHash) { lastHash = text; render(); }
   } catch (e) { console.warn("load failed", e); }
   nextAt = Date.now() + POLL_MS;
   tickClock();
-  if (!data || data.status !== "final" || DEMO) setTimeout(load, POLL_MS);
+  if (!data || data.status !== "final" || DEMO) timer = setTimeout(load, POLL_MS);
 }
+// Phones freeze timers in background tabs: refresh the moment the page is visible again.
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") load(); });
+addEventListener("pageshow", e => { if (e.persisted) load(); });
+addEventListener("focus", () => { if (Date.now() - lastFetchOk > 15000) load(); });
 setInterval(tickClock, 1000);
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => data && render());
 load();

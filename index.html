@@ -127,6 +127,7 @@ footer a { color: var(--text-2); }
         <span id="checked"></span>
         <a href="https://www.youtube.com/@NHEpiscopal" target="_blank" rel="noopener">Livestream</a>
         <a href="https://www.nhepiscopal.org/diocesan-convention-2026" target="_blank" rel="noopener">Diocesan page</a>
+        <a href="https://www.nhepiscopalbishoptransition.org/" target="_blank" rel="noopener">Bishop transition site</a>
       </div>
     </div>
   </div>
@@ -138,7 +139,7 @@ footer a { color: var(--text-2); }
   <div id="banner"></div>
   <div id="rounds"></div>
 </main>
-<footer class="wrap">Not affiliated with the Episcopal Church of New Hampshire. Source: <a href="https://www.nhepiscopal.org/diocesan-convention-2026" target="_blank" rel="noopener">nhepiscopal.org</a>. Times are Eastern.</footer>
+<footer class="wrap">Not affiliated with the Episcopal Church of New Hampshire. Sources: <a href="https://www.nhepiscopal.org/diocesan-convention-2026" target="_blank" rel="noopener">nhepiscopal.org</a> and <a href="https://www.nhepiscopalbishoptransition.org/" target="_blank" rel="noopener">nhepiscopalbishoptransition.org</a>. Times are Eastern.</footer>
 
 <script>
 const DEMO = new URLSearchParams(location.search).has("demo");
@@ -332,7 +333,7 @@ function render() {
   } else banner.innerHTML = "";
 
   const err = document.getElementById("error");
-  err.hidden = !data.lastError; err.textContent = data.lastError ? `Last check of the diocesan page failed: ${data.lastError}` : "";
+  err.hidden = !data.lastError; err.textContent = data.lastError ? `Last check of both source sites failed: ${data.lastError}` : "";
 
   const rounds = [...(data.rounds || [])].sort((a, b) => b.round - a.round);
   document.getElementById("rounds").innerHTML = rounds.length ? rounds.map(roundHTML).join("")

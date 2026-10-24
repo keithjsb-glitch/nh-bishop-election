@@ -20,6 +20,9 @@ import requests
 from bs4 import BeautifulSoup
 
 SOURCE_URL = "https://www.nhepiscopal.org/diocesan-convention-2026"
+SOURCES = [SOURCE_URL, "https://www.nhepiscopalbishoptransition.org/"]
+FOLLOW_RE = re.compile(r"ballot|result|elect|convention|announce", re.I)
+MAX_FOLLOW = 6
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data", "results.json")
 HEARTBEAT_MIN = 15  # GitHub Pages soft limit is 10 builds/hour
@@ -72,6 +75,55 @@ def fetch_text(url=SOURCE_URL):
             try:
                 rr = requests.get(src, timeout=30)
                 texts.append(html_to_text(rr.text))
+            except Exception as e:  # noqa: BLE001
+                print("iframe fetch failed:", src, e, file=sys.stderr)
+    return normalize("\n".join(texts))
+
+
+def completeness(r):
+    """Rank parsed ballots: more orders, more nominees, then more total votes."""
+    os_ = [r[o] for o in ("clergy", "laity") if o in r]
+    return (len(os_), sum(len(o["votes"]) for o in os_), sum(sum(o["votes"].values()) for o in os_))
+
+
+def fetch_site(url):
+    """Yield page text for url plus same-site pages it links to that look like results."""
+    from urllib.parse import urljoin, urlparse
+    r = requests.get(url, timeout=30, headers={"User-Agent": "Mozilla/5.0 (election-dashboard poller)",
+                                               "Cache-Control": "no-cache"},
+                     params={"_": int(time.time())})
+    r.raise_for_status()
+    yield fetch_text_from_html(r.text)
+    host = urlparse(url).netloc
+    soup = BeautifulSoup(r.text, "html.parser")
+    seen, n = {url.rstrip("/")}, 0
+    for a in soup.find_all("a", href=True):
+        href = urljoin(url, a["href"]).split("#")[0].split("?")[0]
+        if urlparse(href).netloc != host or href.rstrip("/") in seen:
+            continue
+        if not FOLLOW_RE.search(a.get_text(" ") + " " + href) or re.search(r"\.(pdf|jpe?g|png)$", href, re.I):
+            continue
+        seen.add(href.rstrip("/"))
+        try:
+            rr = requests.get(href, timeout=20, headers={"User-Agent": "Mozilla/5.0 (election-dashboard poller)"},
+                              params={"_": int(time.time())})
+            if rr.ok:
+                yield fetch_text_from_html(rr.text)
+        except Exception as e:  # noqa: BLE001
+            print("follow failed:", href, e, file=sys.stderr)
+        n += 1
+        if n >= MAX_FOLLOW:
+            break
+
+
+def fetch_text_from_html(html):
+    soup = BeautifulSoup(html, "html.parser")
+    texts = [html_to_text(html)]
+    for fr in soup.find_all("iframe"):
+        src = fr.get("src") or fr.get("data-src") or ""
+        if "docs.google.com" in src:
+            try:
+                texts.append(html_to_text(requests.get(src, timeout=30).text))
             except Exception as e:  # noqa: BLE001
                 print("iframe fetch failed:", src, e, file=sys.stderr)
     return normalize("\n".join(texts))
@@ -280,14 +332,26 @@ def once(commit=False, force_commit=False):
         git("reset", "--hard", "@{u}")
     d = load()
     before = content_hash(d)
-    try:
-        parsed, withdrawn = parse(fetch_text())
-        merge(d, parsed, withdrawn)
+    best, withdrawn, errors = {}, set(), []
+    for url in SOURCES:
+        try:
+            for page_text in fetch_site(url):
+                rounds, wd = parse(page_text)
+                withdrawn |= wd
+                for r in rounds:
+                    if completeness(r) > completeness(best.get(r["round"], {})):
+                        best[r["round"]] = r
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"{url}: {type(e).__name__}: {e}"[:200])
+            print("fetch/parse error:", errors[-1], file=sys.stderr)
+    if best or withdrawn:
+        merge(d, [best[k] for k in sorted(best)], withdrawn)
+    if len(errors) == len(SOURCES):
+        d["lastError"] = " | ".join(errors)[:400]
+    else:
         d.pop("lastError", None)
-    except Exception as e:  # noqa: BLE001
-        d["lastError"] = f"{type(e).__name__}: {e}"[:300]
-        print("fetch/parse error:", d["lastError"], file=sys.stderr)
     d["source"] = SOURCE_URL
+    d["sources"] = SOURCES
     d["lastChecked"] = now_iso()
     elected = finalize(d)
     changed = content_hash(d) != before
